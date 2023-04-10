@@ -6,9 +6,12 @@ import jakarta.persistence.*;
 import lombok.*;
 import tech.adrianmuntean.hustl.DTO.UserDTO;
 
+import java.awt.*;
 import java.time.LocalDate;
+import java.util.List;
 
-// changes in: create, update, f
+// finish with images, do the interests
+// start on the matching - match, match functionality (matches 2 users after each swiped)
 
 @ToString
 @Getter
@@ -44,18 +47,14 @@ public class User {
     @JsonManagedReference
     private Gender gender;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "location_id", nullable = false)
     @JsonManagedReference
     private Location location;
 
-
-//    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    private Set<UserImage> userImages;
-
-//    @OneToOne(fetch = FetchType.LAZY, optional = true)
-//    @JoinColumn(name = "preference_set_id", nullable = true)
-//    private PreferenceSet preferenceSet;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<UserImage> userImages;
 
 //    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 //    @JoinTable(name = "user_interest", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "interest_id"))
@@ -72,5 +71,18 @@ public class User {
         setName(userDTO.getName());
         setBirthday(userDTO.getBirthday());
         setBio(userDTO.getBio());
+    }
+
+    public String addImage(Image image) {
+        String response;
+
+        if (userImages.size() < 6) {
+            userImages.add(image);
+            image.setUser(this);
+            response = "OK";
+        } else {
+            response = "Can't have more than 6 images";
+        }
+        return response;
     }
 }

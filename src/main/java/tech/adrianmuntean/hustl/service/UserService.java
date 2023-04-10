@@ -105,6 +105,7 @@ public class UserService {
                     response = "OK";
                 }
                 case "bio" -> tempUser.setBio(value);
+                default -> response = "Invalid request";
             }
 
             userRepository.save(tempUser);

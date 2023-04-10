@@ -2,10 +2,12 @@ package tech.adrianmuntean.hustl.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.util.Set;
 
 @Entity
+@Getter
 @Table(name = "location")
 public class Location {
     @Id
@@ -16,12 +18,11 @@ public class Location {
     @Column(name = "country", nullable = false)
     private String country;
 
-    @Column(name = "ISO", nullable = false)
-    private String ISO;
+    @Column(name = "iso", nullable = false)
+    private String iso;
 
-//    @Column(name = "city", nullable = false)
+    //    @Column(name = "city", nullable = false)
 //    private String city;
-
     @OneToMany(mappedBy = "location", cascade = CascadeType.ALL)
     @JsonBackReference
     private Set<User> users;

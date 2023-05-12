@@ -4,64 +4,40 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import tech.adrianmuntean.hustl.DTO.UserDTO;
-import tech.adrianmuntean.hustl.model.Gender;
-import tech.adrianmuntean.hustl.model.Location;
 import tech.adrianmuntean.hustl.model.User;
-import tech.adrianmuntean.hustl.service.GenderService;
-import tech.adrianmuntean.hustl.service.LocationService;
+import tech.adrianmuntean.hustl.security.services.UserDetailsImpl;
 import tech.adrianmuntean.hustl.service.UserService;
 
-import java.util.List;
-
+@CrossOrigin(origins = "*", maxAge = 4800)
 @RestController
-@CrossOrigin
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
-    private final GenderService genderService;
-    private final LocationService locationService;
 
-    public UserController(UserService userService, GenderService genderService, LocationService locationService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.genderService = genderService;
-        this.locationService = locationService;
     }
 
-    //    create
-    @PostMapping("/create")
-    public ResponseEntity<List<String>> create(@RequestBody UserDTO userDTO) {
-        User user = new User();
-        user.setFromDTO(userDTO);
+    //region create
+    //endregion
 
-        Gender gender = genderService.findById(userDTO.getGenderId());
-        user.setGender(gender);
-
-        Location location = locationService.findById(userDTO.getLocationId());
-        user.setLocation(location);
-
-        return ResponseEntity.ok(userService.create(user));
-    }
-
-    //    read
-    @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.findById(id));
-    }
-
-    @GetMapping("/email/{email}")
-    public ResponseEntity<User> findByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.findByEmail(email));
-    }
-
+    //region read
     @GetMapping("/")
-    public ResponseEntity<List<User>> findAll() {
-        return ResponseEntity.ok(userService.findAll());
-    }
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<User> findById(Authentication authentication) {
 
-    //    update
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+        return ResponseEntity.ok(userService.findById(userId));
+    }
+    //endregion
+
+    //region update
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> update(@PathVariable Long id, @RequestBody String change) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -71,10 +47,13 @@ public class UserController {
             throw new IllegalArgumentException("Invalid update request");
         }
     }
+    //endregion
 
-    //    delete
+    //region delete
     @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         return ResponseEntity.ok(userService.delete(id));
     }
+    //endregion
 }

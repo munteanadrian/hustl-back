@@ -1,0 +1,4 @@
+hustl:
+  app:
+    expiration: 4800
+    secret: hustl

@@ -1,17 +1,8 @@
 package tech.adrianmuntean.hustl.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-import tech.adrianmuntean.hustl.DTO.UserDTO;
 
-import java.awt.*;
-import java.time.LocalDate;
-import java.util.List;
-
-// finish with images, do the interests
-// start on the matching - match, match functionality (matches 2 users after each swiped)
 
 @ToString
 @Getter
@@ -35,54 +26,16 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @JsonFormat(pattern = "dd-MM-yyyy")
-    @Column(name = "birthday", nullable = false)
-    private LocalDate birthday;
+//    Another table called communities
+//    Intersection table called community_membership
 
-    @Column(name = "bio", nullable = true)
-    private String bio;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "gender_id", nullable = false)
-    @JsonManagedReference
-    private Gender gender;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "location_id", nullable = false)
-    @JsonManagedReference
-    private Location location;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<UserImage> userImages;
-
-//    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    @JoinTable(name = "user_interest", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "interest_id"))
-//    private Set<Interest> interests;
+//    Another table for the chats (one user - many messages, one message one user)
+//    Intersection table or something between user and community membership
 
 
-//    @ManyToMany
-//    @JoinTable(name = "user_match", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "match_id"))
-//    private Set<Match> matches;
-
-    public void setFromDTO(UserDTO userDTO) {
-        setEmail(userDTO.getEmail());
-        setPassword(userDTO.getPassword());
-        setName(userDTO.getName());
-        setBirthday(userDTO.getBirthday());
-        setBio(userDTO.getBio());
-    }
-
-    public String addImage(Image image) {
-        String response;
-
-        if (userImages.size() < 6) {
-            userImages.add(image);
-            image.setUser(this);
-            response = "OK";
-        } else {
-            response = "Can't have more than 6 images";
-        }
-        return response;
+    public User(String email, String password, String name) {
+        this.email = email;
+        this.password = password;
+        this.name = name;
     }
 }

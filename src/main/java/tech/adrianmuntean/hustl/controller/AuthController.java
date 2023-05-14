@@ -17,8 +17,7 @@ import tech.adrianmuntean.hustl.model.User;
 import tech.adrianmuntean.hustl.repository.UserRepository;
 import tech.adrianmuntean.hustl.security.jwt.JWTConfig;
 import tech.adrianmuntean.hustl.security.services.UserDetailsImpl;
-import tech.adrianmuntean.hustl.utils.responses.JWTResponse;
-import tech.adrianmuntean.hustl.utils.responses.MessageResponse;
+import tech.adrianmuntean.hustl.utils.JWTResponse;
 
 @CrossOrigin(origins = "*", maxAge = 4800)
 @RestController
@@ -47,11 +46,17 @@ public class AuthController {
             UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
 
             logger.info("User " + user.getEmail() + " logged in.");
-            return ResponseEntity.ok(new JWTResponse(user.getId(), jwt, user.getEmail()));
+            return ResponseEntity.ok(new JWTResponse(jwt));
         } catch (AuthenticationException e) {
             System.out.println("Invalid credentials");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid credentials"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        SecurityContextHolder.getContext().setAuthentication(null);
+        return ResponseEntity.ok("Logged out successfully");
     }
 
     @PostMapping("/signup")
@@ -61,7 +66,7 @@ public class AuthController {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
+                    .body("Error: Email is already in use!");
         }
 
 //        User doesn't exist so we create a new one and save it to the database
@@ -69,7 +74,7 @@ public class AuthController {
         userRepository.save(user);
         logger.info("User " + user.getEmail() + " signed up.");
 
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+        return ResponseEntity.ok("User registered successfully!");
     }
 
 

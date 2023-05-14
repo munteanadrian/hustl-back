@@ -1,4 +1,4 @@
-package tech.adrianmuntean.hustl.utils.responses;
+package tech.adrianmuntean.hustl.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,14 +8,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class JWTResponse {
-    private Long id;
     private String type = "Bearer";
     private String token;
-    private String email;
 
-    public JWTResponse(Long id, String token, String email) {
-        this.id = id;
+    public JWTResponse(String token) {
         this.token = token;
-        this.email = email;
     }
 }

@@ -1,7 +1,10 @@
 package tech.adrianmuntean.hustl.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.Set;
 
 
 @ToString
@@ -26,12 +29,19 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
-//    Another table called communities
-//    Intersection table called community_membership
 
-//    Another table for the chats (one user - many messages, one message one user)
-//    Intersection table or something between user and community membership
+    @ManyToMany
+    @JoinTable(
+            name = "membership",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "community_id")
+    )
+    @JsonManagedReference
+    private Set<Community> communities;
 
+    @OneToMany(mappedBy = "sender")
+    @JsonManagedReference
+    private Set<Message> messages;
 
     public User(String email, String password, String name) {
         this.email = email;

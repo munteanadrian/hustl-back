@@ -1,4 +1,4 @@
-package tech.adrianmuntean.hustl.utils.responses;
+package tech.adrianmuntean.hustl.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MessageResponse {
-    private String message;
+public class APIResponse {
+    private int status;
+    private String response;
+
+
 }

@@ -18,8 +18,7 @@ public class MembershipController {
     public MembershipController(MembershipService membershipService) {
         this.membershipService = membershipService;
     }
-
-    // region READ
+    
     @GetMapping("/")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Object> getMyCommunities(Authentication authentication) {
@@ -32,9 +31,7 @@ public class MembershipController {
     public ResponseEntity<Object> getCommunityMembers(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(membershipService.getCommunityMembers(id));
     }
-    // endregion
 
-    // region OTHERS
     @PostMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Object> joinCommunity(@PathVariable Long id, Authentication authentication) {
@@ -60,5 +57,4 @@ public class MembershipController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new APIResponse(HttpStatus.CONFLICT.value(), "User can't leave the community " + id));
         }
     }
-    // endregion
 }

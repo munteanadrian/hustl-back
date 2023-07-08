@@ -5,4 +5,6 @@ import tech.adrianmuntean.hustl.model.Community;
 
 public interface CommunityRepository extends JpaRepository<Community, Long> {
     boolean existsByName(String name);
+
+    Community findByName(String name);
 }

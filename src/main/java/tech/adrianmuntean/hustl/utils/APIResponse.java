@@ -12,6 +12,4 @@ import lombok.Setter;
 public class APIResponse {
     private int status;
     private String response;
-
-
 }

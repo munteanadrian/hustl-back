@@ -9,10 +9,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import tech.adrianmuntean.hustl.dto.CommunityDTO;
+import tech.adrianmuntean.hustl.model.Community;
 import tech.adrianmuntean.hustl.model.User;
 import tech.adrianmuntean.hustl.security.services.UserDetailsImpl;
 import tech.adrianmuntean.hustl.service.UserService;
 import tech.adrianmuntean.hustl.utils.APIResponse;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 4800)
 @RestController
@@ -23,8 +28,7 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
-
-    //region read
+    
     @GetMapping("/")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> getCurrentUser(Authentication authentication) {
@@ -32,9 +36,22 @@ public class UserController {
         Long userId = userDetails.getId();
         return ResponseEntity.ok(userService.findById(userId));
     }
-    //endregion
 
-    //region update
+    @GetMapping("/recommendations")
+    @PreAuthorize("isAuthenticated()")
+    public List<CommunityDTO> getCommunityRecommendations(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
+        List<CommunityDTO> communitiesDTO = new ArrayList<>();
+        for (Community current : userService.getCommunityRecommendations(userId)) {
+            CommunityDTO temp = new CommunityDTO(current.getCommunityId(), current.getName(), current.getCategory().getName(), current.getDescription());
+            communitiesDTO.add(temp);
+        }
+
+        return communitiesDTO;
+    }
+
     @PutMapping("/")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Object> updateCurrentUser(@RequestBody String change, Authentication authentication) {
@@ -51,7 +68,7 @@ public class UserController {
             boolean updated = userService.update(userId, updateKey, updateValue);
 
             if (updated) {
-                return ResponseEntity.status(HttpStatus.OK).body(new APIResponse(HttpStatus.OK.value(), "User " + userService.findById(userId).getEmail() + " updated successfully"));
+                return ResponseEntity.status(HttpStatus.OK).body(userService.findById(userId));
             } else {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new APIResponse(HttpStatus.CONFLICT.value(), "User " + userService.findById(userId).getEmail() + " not updated."));
             }
@@ -60,9 +77,7 @@ public class UserController {
             throw new IllegalArgumentException("Invalid update request");
         }
     }
-    //endregion
 
-    //region delete
     @DeleteMapping("/")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Object> deleteCurrentUser(Authentication authentication, HttpServletRequest request) {
@@ -78,5 +93,4 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new APIResponse(HttpStatus.CONFLICT.value(), "User not deleted."));
         }
     }
-    //endregion
 }

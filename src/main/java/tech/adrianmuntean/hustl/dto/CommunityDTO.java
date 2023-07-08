@@ -8,5 +8,8 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class CommunityDTO {
+    private Long communityId;
     private String name;
+    private String category;
+    private String description;
 }

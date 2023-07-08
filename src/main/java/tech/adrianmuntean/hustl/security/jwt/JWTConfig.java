@@ -43,7 +43,6 @@ public class JWTConfig {
     public String generateToken(Authentication authentication) {
         UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
 
-//        getUsername - email
         return Jwts.builder().setSubject(user.getUsername()).setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + expiration))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();

@@ -1,27 +1,5 @@
 package tech.adrianmuntean.hustl.controller;
 
-// Create a standard for requests, add all to Postman, document them in Postman
-// Community to do steps:
-// 1. Create community model DONE
-// 2. Create community repository DONE
-// 3. Create community service
-// 4. Create community controller: APIs for create community, delete community, update community, get all communities,
-// get community information and also join community, leave community, see my communities, see members of a community
-// 5. Test APIs - Postman - create community, get info, join 3 members, see members, leave 1 member, change community
-// name, see communities of a member, see all communities, delete community with 2 members
-
-// Create chat model:
-// 1. Group chat
-// 2. Private chat and friends list
-
-// Create events for communities
-// 1. Create event model tied to a community
-// 2. Create event repository
-// 3. Create event service
-// 4. Create event controller: APIs for create event, delete event, update event, get all events for each community
-// 5. Test APIs - Postman - create event, get info, update event, delete event, see all events for a community
-
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,9 +9,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import tech.adrianmuntean.hustl.dto.CommunityDTO;
+import tech.adrianmuntean.hustl.model.Community;
+import tech.adrianmuntean.hustl.security.services.UserDetailsImpl;
 import tech.adrianmuntean.hustl.service.CommunityService;
 import tech.adrianmuntean.hustl.service.UserService;
 import tech.adrianmuntean.hustl.utils.APIResponse;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 4800)
 @RestController
@@ -47,12 +30,13 @@ public class CommunityController {
         this.communityService = communityService;
     }
 
-    // region CREATE
     @PostMapping("/")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Object> createCommunity(@RequestBody CommunityDTO communityDTO) {
-        //    Modify this so that communities are created by users and only the owners can delete them
-        boolean created = communityService.createCommunity(communityDTO);
+    public ResponseEntity<Object> createCommunity(@RequestBody CommunityDTO communityDTO, Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
+        boolean created = communityService.createCommunity(communityDTO, userId);
 
         if (created) {
             return ResponseEntity.status(HttpStatus.CREATED).body(new APIResponse(HttpStatus.CREATED.value(), "Community " + communityDTO.getName() + " created successfully"));
@@ -60,13 +44,17 @@ public class CommunityController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new APIResponse(HttpStatus.CONFLICT.value(), "Community " + communityDTO.getName() + " already exists"));
         }
     }
-    // endregion
 
-    // region READ
     @GetMapping("/")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Object> getAllCommunities() {
-        return ResponseEntity.ok(communityService.getAllCommunities());
+        List<CommunityDTO> communitiesDTO = new ArrayList<>();
+        for (Community current : communityService.getAllCommunities()) {
+            CommunityDTO temp = new CommunityDTO(current.getCommunityId(), current.getName(), current.getCategory().getName(), current.getDescription());
+            communitiesDTO.add(temp);
+        }
+
+        return ResponseEntity.ok(communitiesDTO);
     }
 
     @GetMapping("/{id}")
@@ -74,9 +62,25 @@ public class CommunityController {
     public ResponseEntity<Object> getCommunity(@PathVariable Long id) {
         return ResponseEntity.ok(communityService.getCommunityById(id));
     }
-    // endregion
 
-    // region UPDATE
+    @GetMapping("/popular")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Object> getPopularCommunities() {
+        List<CommunityDTO> communitiesDTO = new ArrayList<>();
+        for (Community current : communityService.getPopularCommunities()) {
+            CommunityDTO temp = new CommunityDTO(current.getCommunityId(), current.getName(), current.getCategory().getName(), current.getDescription());
+            communitiesDTO.add(temp);
+        }
+
+        return ResponseEntity.ok(communitiesDTO);
+    }
+
+    @GetMapping("/{communityId}/messages")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Object> getMessages(@PathVariable Long communityId) {
+        return ResponseEntity.ok(communityService.getMessages(communityId));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Object> updateCommunity(@PathVariable Long id, @RequestBody String change, Authentication authentication) {
@@ -94,13 +98,10 @@ public class CommunityController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new APIResponse(HttpStatus.BAD_REQUEST.value(), "Invalid JSON"));
         }
     }
-    // endregion
 
-    // region DELETE
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Boolean> deleteCommunity(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(communityService.deleteCommunity(id));
     }
-    // endregion
 }

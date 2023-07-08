@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @ToString
 @Getter
@@ -24,16 +24,27 @@ public class Community {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "description", nullable = false)
+    private String description;
+
     @ManyToMany(mappedBy = "communities")
     @JsonBackReference
-    private Set<User> users;
+    private List<User> users;
 
-    @OneToMany(mappedBy = "recipient")
+    @OneToMany(mappedBy = "recipient", fetch = FetchType.EAGER)
+    @JsonBackReference
+    private List<Message> messages;
+
+    @ManyToOne
     @JsonManagedReference
-    private Set<Message> messages;
+    private Category category;
 
-    public Community(String name) {
+    public Community(String name, Category category, String description) {
         this.name = name;
-        this.users = new HashSet<>();
+        this.category = category;
+        this.description = description;
+
+        this.users = new ArrayList<>();
+        this.messages = new ArrayList<>();
     }
 }

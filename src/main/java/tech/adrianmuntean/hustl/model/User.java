@@ -1,11 +1,12 @@
 package tech.adrianmuntean.hustl.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Set;
-
+import java.util.ArrayList;
+import java.util.List;
 
 @ToString
 @Getter
@@ -29,23 +30,35 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_category",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    @JsonManagedReference
+    private List<Category> interests;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "membership",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "community_id")
     )
     @JsonManagedReference
-    private Set<Community> communities;
+    private List<Community> communities;
 
-    @OneToMany(mappedBy = "sender")
-    @JsonManagedReference
-    private Set<Message> messages;
+    @OneToMany(mappedBy = "sender", fetch = FetchType.EAGER)
+    @JsonBackReference
+    private List<Message> messages;
 
-    public User(String email, String password, String name) {
+    public User(String email, String password, String name, List<Category> interests) {
         this.email = email;
         this.password = password;
         this.name = name;
+        this.interests = interests;
+
+        this.communities = new ArrayList<>();
+        this.messages = new ArrayList<>();
     }
 }

@@ -1,6 +1,6 @@
 package tech.adrianmuntean.hustl.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,14 +23,14 @@ public class Message {
     @Column(name = "content", nullable = false)
     private String content;
 
-    //    add to user
-    @ManyToOne
-    @JsonBackReference
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonManagedReference
     private User sender;
 
-    //    add to community
-    @ManyToOne
-    @JsonBackReference
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "community_id", nullable = false)
+    @JsonManagedReference
     private Community recipient;
 
     public Message(String content, User sender, Community recipient) {

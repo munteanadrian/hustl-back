@@ -1,7 +1,5 @@
 package tech.adrianmuntean.hustl.controller;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,27 +11,33 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import tech.adrianmuntean.hustl.dto.LoginDTO;
 import tech.adrianmuntean.hustl.dto.SignupDTO;
+import tech.adrianmuntean.hustl.model.Category;
 import tech.adrianmuntean.hustl.model.User;
+import tech.adrianmuntean.hustl.repository.CategoryRepository;
 import tech.adrianmuntean.hustl.repository.UserRepository;
 import tech.adrianmuntean.hustl.security.jwt.JWTConfig;
 import tech.adrianmuntean.hustl.security.services.UserDetailsImpl;
 import tech.adrianmuntean.hustl.utils.JWTResponse;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @CrossOrigin(origins = "*", maxAge = 4800)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private static final Logger logger = LogManager.getLogger(AuthController.class);
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
     private final PasswordEncoder encoder;
     private final JWTConfig jwtConfig;
 
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, PasswordEncoder encoder, JWTConfig jwtConfig) {
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, PasswordEncoder encoder, JWTConfig jwtConfig, CategoryRepository categoryRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.jwtConfig = jwtConfig;
+        this.categoryRepository = categoryRepository;
     }
 
     @PostMapping("/login")
@@ -45,7 +49,6 @@ public class AuthController {
             String jwt = jwtConfig.generateToken(authentication);
             UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
 
-            logger.info("User " + user.getEmail() + " logged in.");
             return ResponseEntity.ok(new JWTResponse(jwt));
         } catch (AuthenticationException e) {
             System.out.println("Invalid credentials");
@@ -61,21 +64,27 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupDTO signupRequest) {
-        System.out.println("Here");
-//        User already exists
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
                     .body("Error: Email is already in use!");
         }
 
-//        User doesn't exist so we create a new one and save it to the database
-        User user = new User(signupRequest.getEmail(), encoder.encode(signupRequest.getPassword()), signupRequest.getName());
+        String[] interestsString = signupRequest.getInterests().split(",");
+        List<Category> interests = new ArrayList<>();
+
+        for (String interest : interestsString) {
+            Category category = categoryRepository.findByName(interest);
+            if (category == null) {
+                category = new Category(interest);
+                categoryRepository.save(category);
+            }
+            interests.add(category);
+        }
+
+        User user = new User(signupRequest.getEmail(), encoder.encode(signupRequest.getPassword()), signupRequest.getName(), interests);
         userRepository.save(user);
-        logger.info("User " + user.getEmail() + " signed up.");
 
         return ResponseEntity.ok("User registered successfully!");
     }
-
-
 }

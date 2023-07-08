@@ -6,7 +6,7 @@ import tech.adrianmuntean.hustl.model.User;
 import tech.adrianmuntean.hustl.repository.CommunityRepository;
 import tech.adrianmuntean.hustl.repository.UserRepository;
 
-import java.util.Set;
+import java.util.List;
 
 @Service
 public class MembershipService {
@@ -24,7 +24,6 @@ public class MembershipService {
         User user = userRepository.findById(userId).orElse(null);
 
         if (community == null || user == null || community.getUsers().contains(user)) {
-//            Custom errors if community doesn't exist or other connexion issues
             return false;
         } else {
             community.getUsers().add(user);
@@ -40,7 +39,6 @@ public class MembershipService {
         User user = userRepository.findById(userId).orElse(null);
 
         if (community == null || user == null || !community.getUsers().contains(user)) {
-//            Custom errors if community doesn't exist or other connexion issues
             return false;
         } else {
             community.getUsers().remove(user);
@@ -51,8 +49,9 @@ public class MembershipService {
         }
     }
 
-    public Set<Community> getMyCommunities(Long userId) {
+    public List<Community> getMyCommunities(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
+
         if (user == null) {
             return null;
         } else {
@@ -60,7 +59,7 @@ public class MembershipService {
         }
     }
 
-    public Set<User> getCommunityMembers(Long id) {
+    public List<User> getCommunityMembers(Long id) {
         Community community = communityRepository.findById(id).orElse(null);
         if (community == null) {
             return null;

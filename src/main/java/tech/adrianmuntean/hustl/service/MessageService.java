@@ -22,29 +22,24 @@ public class MessageService {
         this.communityRepository = communityRepository;
     }
 
-    public boolean sendMessage(String message, Long userId, Long communityId) {
+    public Message sendMessage(String message, Long userId, Long communityId) {
         User sender = userRepository.findById(userId).orElse(null);
-
-        if (sender == null) {
-            return false;
-        }
-
         Community recipient = communityRepository.findById(communityId).orElse(null);
-
-        if (recipient == null) {
-            return false;
-        }
-
         Message newMessage = new Message(message, sender, recipient);
+
         messageRepository.save(newMessage);
 
-        sender.getMessages().add(newMessage);
-        userRepository.save(sender);
+        if (sender != null) {
+            sender.getMessages().add(newMessage);
+            userRepository.save(sender);
+        }
 
-        recipient.getMessages().add(newMessage);
-        communityRepository.save(recipient);
+        if (recipient != null) {
+            recipient.getMessages().add(newMessage);
+            communityRepository.save(recipient);
+        }
 
-        return true;
+        return newMessage;
     }
 
     public List<Message> getMessagesInGroup(Long groupId) {
